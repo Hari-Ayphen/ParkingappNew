@@ -75,12 +75,26 @@ one.
 | F | Profile completion (name, email, UPI ID) | `02-after-login-flow.md` | api, mobile |
 | G | Splash, onboarding slides, just-in-time permissions | `00-splash-onboarding-flow.md` | mobile |
 | H | Home shell — dual-mode hub, bottom nav | `02-after-login-flow.md` | mobile |
+| I | **Theme mechanism — both token sets, provider, System default, persistence** | `design/design-system.md` | mobile, admin |
+
+> **Why the theme mechanism is in `v0.1` and not `v1.0` with Settings.** The Settings *screen*
+> that lets a user pick Light/Dark/System is `v1.0-A`. The *mechanism* — both token sets wired,
+> a provider, System-follow, persistence — must exist before the first screen ships, because
+> every screen from `v0.1-D` onward has to be built against it.
+>
+> Build forty screens light-only and add theming at `v1.0` and you are retrofitting dark across
+> all of them, which is the retrofit that never fully lands: you find the last hardcoded `#fff`
+> in production, at night, in someone's car.
 
 **Exit criteria**
 
 - [ ] Every issue closed; CI green (lint, type-check, tests, build).
 - [ ] Page docs exist for every screen shipped.
 - [ ] A new user completes install → OTP → terms → profile → Home **on a real device**.
+- [ ] **Every screen shipped in this milestone renders correctly in light and dark**, checked on a
+      real device — not a simulator, and not only in daylight. The dark token set was derived, not
+      designed, so `v0.1` is where it gets validated.
+- [ ] **No hardcoded colour values** anywhere in `apps/mobile` or `apps/admin`.
 - [ ] **Known Gotcha 2 resolved:** where Accept Terms sits relative to Profile Completion is
       settled in the docs, and 01/02/19 agree.
 
@@ -194,7 +208,7 @@ The revenue subsystem. Compliance-heavy; do not compress.
 
 | # | Work item | Source doc | Area |
 |---|---|---|---|
-| A | Settings — theme, granular notifications, delete account | `16-settings-flow.md` | mobile |
+| A | Settings **screen** — theme picker, granular notifications, delete account. *(The theme mechanism itself shipped in `v0.1-I`; this is the UI to change it.)* | `16-settings-flow.md` | mobile |
 | B | Profile view/edit | `15-profile-flow.md` | mobile |
 | C | Support — FAQ, tickets, threads | `17-support-flow.md` | api, mobile |
 | D | Maestro E2E on critical journeys; Playwright on admin | `.github/workflows/ci.yml` | infra |

@@ -194,6 +194,31 @@ docs/             # Repo documentation (see docs/README.md)
   (**never** `useEffect` + `reset` — a background refetch wipes the user's input).
 - **No i18n** — plain strings.
 
+### Theming — both surfaces, non-negotiable
+
+**Every screen must render correctly in light *and* dark. There is no light-only screen.**
+
+- **Read semantic tokens, never raw values.** `--bg`, `--fg`, `--primary`, `--card`, `--border`,
+  `--muted-fg`. Both themes are defined in `docs/design/design-system.md`.
+- **Never hardcode a colour** — no hex, no `rgba()`, no `#fff`, no named CSS colours in a
+  component. A hardcoded value is invisible in one theme and there is no lint that catches it
+  looking wrong.
+- **Dark mode is a token remap only.** If a component needs a `dark:` override or a
+  `useColorScheme()` branch, that's a **missing token** — add the token instead.
+- **Default is System**, with a manual override in Settings. Persisted across launches.
+- **Elevation inverts in dark:** surfaces *lighten* to rise (`--card` is lighter than `--bg`);
+  shadows do not deepen. A shadow-only card is invisible on dark — pair it with a border.
+- **Check both themes before calling a screen done.** Not at audit time.
+
+> **Why this is a hard rule and not a polish item.** The app is used at night, in a car, one-handed
+> — a driver at 11pm is the median user, not an edge case. And the dark token set was *derived*
+> during the design-system import, not designed: the source system had no dark theme. Every dark
+> value is a considered guess until it has been seen on a real device.
+
+> **Images are the exception that needs handling, not exemption.** Owner-uploaded space photos
+> are shot in whatever light existed. Overlay scrims and text-on-photo must be legible against a
+> dark *and* a bright photo, in both themes — the scrim is part of the component, not the photo.
+
 ## Integrations
 
 | Concern | Provider | Scope — read this before wiring anything |

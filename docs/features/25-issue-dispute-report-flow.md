@@ -102,6 +102,53 @@ dispute** so that **an unsafe space or person is dealt with while it still matte
   rather than on next queue refresh.
 - **AC4:** Given a safety report exists against a space, when an admin suspends that space, then
   it leaves the map over Socket.IO at once and the owner receives the always-on suspension notice.
+- **AC5:** Given I submit a safety report against a space, when the report is created, then that
+  space is **automatically withheld from search immediately**, without waiting for any admin —
+  `space_status` becomes `suspended_pending_review` and it leaves the map over Socket.IO.
+- **AC6:** Given a space is auto-withheld, when sessions are in progress on it, then those sessions
+  **continue normally** — withholding stops *new* bookings, it never strands someone mid-session.
+- **AC7:** Given an admin reviews and dismisses the report, when they clear it, then the space
+  returns to `active` automatically and the owner is told it was restored.
+- **AC8:** Given the reporter has no booking on the space they are reporting, when they submit,
+  then the report is rejected — only a party to a session on that space may file against it.
+
+## Safety lane — the response model
+
+The original spec said safety reports go to a "faster" lane and stopped there. "Faster" is not
+measurable, so nothing could ever be said to have failed. This section defines what is measured;
+the **target values** are a staffing commitment and remain `[OPEN]`.
+
+### What is measured
+
+| Metric | Definition | Why this one |
+|---|---|---|
+| **Time to withhold** | Report submitted → space out of search | **Automatic. Target: immediate.** Not staffing-dependent, so this is the number that actually holds at 3am |
+| **Time to acknowledge** | Report submitted → a human opens it and records a first assessment | The real SLA. Acknowledgement, **not** resolution — resolution depends on the other party replying and cannot be bounded |
+| **Time to adjudicate** | Report submitted → space restored or fully suspended | Tracked, but not a promise. An owner must not sit in `suspended_pending_review` indefinitely |
+
+> **Acknowledgement, not resolution.** An SLA written against resolution is one the team will
+> breach constantly through no fault of its own, and a breached-by-default SLA gets ignored — which
+> is worse than having none. Bound the part you control.
+
+### `[OPEN]` — the targets you must set
+
+These are commitments about people, not design decisions, so they are not filled in here:
+
+- [ ] **Safety-lane acknowledgement target** (e.g. 30 minutes, 24/7). Only meaningful if someone is
+      actually rostered to meet it.
+- [ ] **Standard-lane acknowledgement target** (e.g. one business day).
+- [ ] **Maximum time in `suspended_pending_review`** before it auto-escalates. Without this, a
+      falsely-reported owner can be offline indefinitely with no recourse.
+- [ ] **Out-of-hours path.** All users are in one timezone (IST), which makes true 24/7 cover
+      cheaper than it would otherwise be — but a rostered on-call is still required, or the
+      acknowledgement target should honestly say "next business morning" rather than pretend.
+
+> If you cannot staff a 24/7 safety lane at launch, **say so in the target** rather than writing an
+> aspirational number. The automatic withhold (BR-2) is what makes that survivable: the risk is
+> contained by code overnight, and a human adjudicates in the morning. An honest slow SLA plus
+> automatic containment is safer than a fast SLA nobody meets.
+
+---
 
 ### US-4 — Dispute an amount with no transaction to check
 
@@ -148,9 +195,30 @@ traps me or my car**.
 
 - **BR-1:** Reporting **never blocks session completion**. It opens a parallel resolution track.
   A report that could hold a session hostage would be weaponised immediately.
-- **BR-2:** **Safety reports get a faster admin lane** than routine disputes. With no listing
-  approval gate (ADR-0002), admin takedown after the fact is the only safety mechanism this
-  product has — its latency is the whole margin.
+- **BR-2:** **A safety report withholds the space automatically, before any human sees it.** The
+  space moves to `suspended_pending_review` on submission and disappears from search at once.
+  Admin review then either restores it or converts it to a full suspension.
+
+  > **Why containment is automatic and not an SLA promise.** With no listing approval gate
+  > (ADR-0002), admin response is the entire safety margin — and a response time is only as real
+  > as the person rostered to meet it. At 3am, a target of "15 minutes" is a number in a document;
+  > an automatic withhold is a control that actually fires. **Do not let the SLA be the primary
+  > containment mechanism.** The SLA governs how fast a human *adjudicates*; the automatic
+  > withhold governs how fast the risk *stops*, and only the second one works unattended.
+
+- **BR-2b:** **Withholding stops new bookings; it never interrupts a live session.** Cutting off a
+  parker already in a space would strand them somewhere unfamiliar — plausibly less safe than the
+  thing being reported.
+
+- **BR-2c:** **Only a party to a session on that space may file a safety report against it**
+  (`booking_id` is required). This is the abuse control: without it, anyone could knock a
+  competitor's space offline on demand.
+
+  > The residual risk is accepted deliberately: someone could book a space once in order to report
+  > it. The trade is asymmetric — a false withhold costs an owner some hours of bookings and is
+  > fully reversible, while leaving a genuinely unsafe space bookable is not. Serial reporters are
+  > flagged for admin review, the same trust-signal mechanism as serial cancellers
+  > (`21-cancellation-flow.md`).
 - **BR-3:** **An amount dispute cannot produce a refund.** SpotKey holds no Parker→Owner money.
   Admin mediation corrects the **record**, nothing else.
 - **BR-4:** **A "he never paid me" ticket has no transaction record to check** and must route to
@@ -208,16 +276,21 @@ overwrites the original — both are retained. Record in
 
 ## Open questions
 
-- [ ] **What is the SLA on the urgent lane?** "Faster" is stated with no target. Without a number,
-      the only safety mechanism the product has is unmeasurable *(compounds Known Gotcha 4)*.
-- [ ] Who staffs the urgent lane out of hours? A safety report at 2am has no defined path.
+- [~] **The urgent-lane SLA is now defined in structure but not in value.** What gets measured, and
+      why acknowledgement rather than resolution, is settled in the *Safety lane* section above.
+      **The four target numbers remain open and are listed there** — they are staffing commitments,
+      not design decisions, so they cannot be resolved in this document.
+      *Containment no longer depends on them:* the automatic withhold (BR-2) fires regardless.
 - [ ] Can an amount be adjusted upward as well as downward, and does either side get to contest
       the adjustment?
 - [ ] How long after a session completes can a report still be filed? "Immediately after" is not a
       window.
-- [ ] Does an open safety report against a space automatically hide it from the map pending review,
-      or does it stay bookable until an admin acts? This is the difference between reactive and
-      precautionary moderation.
+- [x] ~~Does an open safety report automatically hide the space, or does it stay bookable until an
+      admin acts?~~ **Resolved 2026-07-20:** it is withheld automatically and immediately
+      (`suspended_pending_review`), because containment must not depend on someone being awake.
+      See BR-2. Live sessions are unaffected; only a party to a session may file. **The remaining
+      open item is the acknowledgement target, not the containment behaviour** — see the Safety
+      lane section.
 - [ ] Is the reported party told a report exists against them, and when?
 - [ ] Does a resolved amount adjustment regenerate the Parker's downloaded receipt
       (`07-booking-history-flow.md`)?

@@ -90,7 +90,7 @@ belong in Redis with a TTL, since they expire in minutes and must not accumulate
 | `space` | `owner_id`, name, address, `lat`, `lng`, `space_type_id`, `slot_count`, `hourly_rate_paise`, `space_status_id`, `is_live` |
 | `space_slot` | **One row per bookable slot.** `space_id`, `label` (e.g. "A1"), `is_active`. A 1-slot driveway has one row; a 10-slot lot has ten |
 | `space_type` | Lookup — driveway / lot / covered / open |
-| `space_status` | Lookup — **`active`, `suspended`**. *No `pending_approval`* |
+| `space_status` | Lookup — **`active`, `suspended`, `suspended_pending_review`**. *No `pending_approval`* — the approval gate was removed (ADR-0002). `suspended_pending_review` is set **automatically** by a safety report and cleared by admin (`../features/25-issue-dispute-report-flow.md` BR-2) |
 | `space_photo` | 3–8 per space, ordered (`09-add-space-flow.md:22`) |
 | `amenity` | Lookup — covered, CCTV, security, EV charging, lighting, washroom |
 | `space_amenity` | Join |

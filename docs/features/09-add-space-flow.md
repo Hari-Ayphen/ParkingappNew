@@ -180,7 +180,7 @@ waiting on a human before I can start earning**.
 |---|---|---|
 | `space` | new | Location, type, slot count, hourly rate (integer paise), availability rules; `space_status_id` set to `active` on insert, `is_live` defaults `false` |
 | `space_slot` | new | **One row per bookable slot**, created alongside the space (ADR-0005). Bookings attach here, not to `space` |
-| `space_status` | new (seed) | Lookup — `active`, `suspended` only. **Must contain no `pending_approval` row** |
+| `space_status` | new (seed) | Lookup — `active`, `suspended`, `suspended_pending_review`. **Must contain no `pending_approval` row** |
 | `space_type` | new (seed) | Lookup — driveway / lot / covered / open |
 | `vehicle_type` | new (seed) | Lookup; also an input to the platform fee |
 | `amenity` + `space_amenity` | new | Lookup plus join table — amenities are a list, not booleans on `space` |

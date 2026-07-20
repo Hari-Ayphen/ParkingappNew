@@ -4,18 +4,13 @@ The bridge between **docs and work**: feature docs come in, GitHub Milestones + 
 Revisit at every milestone boundary.
 
 - **Last updated:** 2026-07-20
-- **Current milestone:** `v0.1` (not started)
-- **Issues created:** none — no GitHub repo yet. This document is the plan; issue creation is
-  deferred until the repo exists.
+- **Current milestone:** `v0.1` (in progress)
+- **Issues created:** none — `gh` is not authenticated. This document is the plan; issue creation
+  is deferred until it is.
 
-> **⚠ Blocker on turning this into issues.** `PROJECT_PLAN.md`'s model is *one issue per user
-> story* (`US-N`). **The 26 docs in `docs/features/` contain no user stories** — they are flow
-> specs describing screens and behaviour, not stories with given/when/then acceptance criteria.
->
-> The work items below are decomposed *by flow*, which is enough to plan and sequence. It is not
-> enough to open issues against: an issue whose acceptance criteria are "see the flow doc" gets
-> re-litigated in review. **Backfill stories into the feature docs before Stage 6 proper**, using
-> `docs/features/_template.md`. This is tracked as work item `v0.1-A`.
+> ~~**Blocker on turning this into issues** — the feature docs had no user stories.~~
+> **Resolved 2026-07-20:** 134 stories with 555 acceptance criteria now exist across all 25
+> feature docs. Issues can be opened one-per-`US-N` as soon as `gh` is authenticated.
 
 ## The model: milestone = version
 
@@ -67,15 +62,15 @@ one.
 
 | # | Work item | Source doc | Area |
 |---|---|---|---|
-| A | **Backfill user stories into all 26 feature docs** | all | docs |
-| B | Workspace, NestJS API skeleton, Drizzle, CI green | — | infra |
-| C | Lookup tables + seed (`country`, `vehicle_type`, all statuses) | `architecture/data.md` | api |
-| D | Phone + OTP request/verify, JWT + refresh in SecureStore | `01-login-flow.md` | api, mobile |
-| E | Terms acceptance screen + immutable audit trail | `19-terms-acceptance-flow.md` | api, mobile |
-| F | Profile completion (name, email, UPI ID) | `02-after-login-flow.md` | api, mobile |
-| G | Splash, onboarding slides, just-in-time permissions | `00-splash-onboarding-flow.md` | mobile |
-| H | Home shell — dual-mode hub, bottom nav | `02-after-login-flow.md` | mobile |
-| I | **Theme mechanism — both token sets, provider, System default, persistence** | `design/design-system.md` | mobile, admin |
+| A | ~~Backfill user stories into all 26 feature docs~~ **DONE** | all | docs |
+| B | ~~Workspace, NestJS API skeleton, Drizzle, CI green~~ **DONE** | — | infra |
+| C | ~~Lookup tables + seed~~ **DONE** (`platform_rate` deliberately unseeded) | `architecture/data.md` | api |
+| D | Phone + OTP request/verify — **PARTIAL**: OTP lifecycle + endpoints done; msg91 dispatch, Redis store and real token signing outstanding | `01-login-flow.md` | api, mobile |
+| E | Terms acceptance — **PARTIAL**: schema, endpoints and screen done; wiring outstanding | `19-terms-acceptance-flow.md` | api, mobile |
+| F | Profile completion — **PARTIAL**: endpoint and screen done; wiring outstanding | `02-after-login-flow.md` | api, mobile |
+| G | Splash + routing shell — **PARTIAL**: splash done; onboarding slides and permissions outstanding | `00-splash-onboarding-flow.md` | mobile |
+| H | ~~Home shell — dual-mode hub, bottom nav~~ **DONE** | `02-after-login-flow.md` | mobile |
+| I | ~~**Theme mechanism** — both token sets, provider, System default, persistence~~ **DONE** (mobile; admin lands with v0.6) | `design/design-system.md` | mobile, admin |
 
 > **Why the theme mechanism is in `v0.1` and not `v1.0` with Settings.** The Settings *screen*
 > that lets a user pick Light/Dark/System is `v1.0-A`. The *mechanism* — both token sets wired,

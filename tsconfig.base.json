@@ -19,7 +19,9 @@
     "paths": {
       "@spotkey/common": ["libs-common/src/index.ts"],
       "@spotkey/common/*": ["libs-common/src/*"]
-    }
+    },
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "exclude": ["node_modules", "dist", ".next", ".expo"]
 }

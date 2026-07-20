@@ -5,9 +5,11 @@
   "main": "theme/tokens.ts",
   "types": "theme/tokens.ts",
   "scripts": {
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
   }
 }

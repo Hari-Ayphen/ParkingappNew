@@ -47,10 +47,11 @@ jobs:
       - name: Type check mobile theme
         run: pnpm --filter @spotkey/mobile-ui type-check
 
+      - name: Type check mobile
+        run: pnpm --filter mobile type-check
+
       # - name: Type check admin        # enable in v0.6 (admin panel)
       #   run: pnpm --filter admin type-check
-      # - name: Type check mobile       # enable in v0.1-G (first Expo screens)
-      #   run: pnpm --filter mobile type-check
 
   test:
     name: Tests
@@ -75,10 +76,14 @@ jobs:
       - name: Run backend tests
         run: pnpm test:api
 
+      - name: Run mobile tests
+        run: pnpm test:mobile
+
+      - name: Run mobile theme tests
+        run: pnpm --filter @spotkey/mobile-ui test
+
       # - name: Run admin tests         # enable in v0.6
       #   run: pnpm test:admin
-      # - name: Run mobile tests        # enable in v0.1-G
-      #   run: pnpm test:mobile
 
   build:
     name: Build

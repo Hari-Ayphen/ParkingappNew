@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "SpotKey",
+    "slug": "spotkey",
+    "version": "0.1.0",
+    "scheme": "spotkey",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f766e"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.spotkey.app"
+    },
+    "android": {
+      "package": "com.spotkey.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f766e"
+      }
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

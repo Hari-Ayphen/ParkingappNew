@@ -13,15 +13,15 @@
  * Usage: pnpm docs:viewer
  */
 
-import { readFile, writeFile, readdir, stat } from "node:fs/promises";
-import { createRequire } from "node:module";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile, writeFile, readdir, stat } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const DOCS_DIR = path.join(ROOT, "docs");
-const OUT_FILE = path.join(DOCS_DIR, "viewer.html");
+const ROOT = path.resolve(__dirname, '..');
+const DOCS_DIR = path.join(ROOT, 'docs');
+const OUT_FILE = path.join(DOCS_DIR, 'viewer.html');
 
 /**
  * Resolves the docs title. Env var wins, then the root package.json name, then a
@@ -32,36 +32,36 @@ async function resolveTitle() {
   if (fromEnv) return fromEnv;
 
   try {
-    const pkg = JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8"));
-    const name = typeof pkg.name === "string" ? pkg.name.replace(/^@[^/]+\//, "").trim() : "";
+    const pkg = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'));
+    const name = typeof pkg.name === 'string' ? pkg.name.replace(/^@[^/]+\//, '').trim() : '';
     if (name) return `${name} Docs`;
   } catch {
     // No root package.json (or unreadable) — fall through to the default.
   }
 
-  return "Docs";
+  return 'Docs';
 }
 
 /** Repo-root files that are docs in spirit but live outside docs/. */
-const ROOT_DOCS = ["README.md", "CLAUDE.md"];
+const ROOT_DOCS = ['README.md', 'CLAUDE.md'];
 
 /** Pretty labels + display order for the top-level folders under docs/. */
 const CATEGORY_META = [
-  ["Project", "Project"],
-  ["Docs root", "Docs root"],
-  ["overview", "Overview"],
-  ["features", "Features (specs)"],
-  ["branding", "Branding"],
-  ["architecture", "Architecture"],
-  ["api", "API"],
-  ["modules", "Modules"],
-  ["decisions", "Decisions"],
-  ["operations", "Operations"],
-  ["pages", "Pages"],
-  ["design", "Design"],
-  ["agents", "Agents"],
-  ["_phase2", "Phase 2 (deferred)"],
-  ["_audit", "Audit"],
+  ['Project', 'Project'],
+  ['Docs root', 'Docs root'],
+  ['overview', 'Overview'],
+  ['features', 'Features (specs)'],
+  ['branding', 'Branding'],
+  ['architecture', 'Architecture'],
+  ['api', 'API'],
+  ['modules', 'Modules'],
+  ['decisions', 'Decisions'],
+  ['operations', 'Operations'],
+  ['pages', 'Pages'],
+  ['design', 'Design'],
+  ['agents', 'Agents'],
+  ['_phase2', 'Phase 2 (deferred)'],
+  ['_audit', 'Audit'],
 ];
 const CATEGORY_LABEL = new Map(CATEGORY_META);
 const CATEGORY_ORDER = new Map(CATEGORY_META.map(([key], i) => [key, i]));
@@ -77,9 +77,9 @@ async function walk(dir) {
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === ".git") continue;
+      if (entry.name === 'node_modules' || entry.name === '.git') continue;
       found.push(...(await walk(full)));
-    } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".md")) {
+    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
       found.push(full);
     }
   }
@@ -88,21 +88,21 @@ async function walk(dir) {
 
 /** Top-level folder under docs/ is the category; files directly in docs/ are "Docs root". */
 function categoryFor(relPath) {
-  if (!relPath.startsWith("docs/")) return "Project";
-  const rest = relPath.slice("docs/".length);
-  const slash = rest.indexOf("/");
-  return slash === -1 ? "Docs root" : rest.slice(0, slash);
+  if (!relPath.startsWith('docs/')) return 'Project';
+  const rest = relPath.slice('docs/'.length);
+  const slash = rest.indexOf('/');
+  return slash === -1 ? 'Docs root' : rest.slice(0, slash);
 }
 
 /** First H1 wins; otherwise Title-Case the filename. */
 function titleFor(markdown, relPath) {
   const match = markdown.match(/^[ \t]{0,3}#[ \t]+(.+?)[ \t]*#*[ \t]*$/m);
   if (match) {
-    return match[1].replace(/`/g, "").replace(/\*\*?/g, "").trim();
+    return match[1].replace(/`/g, '').replace(/\*\*?/g, '').trim();
   }
-  const base = path.basename(relPath, ".md");
+  const base = path.basename(relPath, '.md');
   return base
-    .replace(/[-_]+/g, " ")
+    .replace(/[-_]+/g, ' ')
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -120,9 +120,9 @@ async function collectDocs() {
 
   const docs = [];
   for (const full of files) {
-    const relPath = path.relative(ROOT, full).split(path.sep).join("/");
-    if (relPath === "docs/viewer.html") continue; // never inline our own output
-    const markdown = await readFile(full, "utf8");
+    const relPath = path.relative(ROOT, full).split(path.sep).join('/');
+    if (relPath === 'docs/viewer.html') continue; // never inline our own output
+    const markdown = await readFile(full, 'utf8');
     const category = categoryFor(relPath);
     docs.push({
       path: relPath,
@@ -155,22 +155,22 @@ async function collectDocs() {
  */
 async function readMarkedBundle() {
   const require = createRequire(import.meta.url);
-  const pkgJson = require.resolve("marked/package.json");
+  const pkgJson = require.resolve('marked/package.json');
   const pkgDir = path.dirname(pkgJson);
-  const version = JSON.parse(await readFile(pkgJson, "utf8")).version;
+  const version = JSON.parse(await readFile(pkgJson, 'utf8')).version;
 
-  const candidates = ["marked.min.js", "lib/marked.umd.js", "marked.umd.js", "lib/marked.min.js"];
+  const candidates = ['marked.min.js', 'lib/marked.umd.js', 'marked.umd.js', 'lib/marked.min.js'];
   for (const candidate of candidates) {
     const full = path.join(pkgDir, candidate);
     try {
-      const source = await readFile(full, "utf8");
+      const source = await readFile(full, 'utf8');
       return { source, version, file: candidate };
     } catch {
       // try next candidate
     }
   }
   throw new Error(
-    `Could not find a browser build of marked in ${pkgDir}. Tried: ${candidates.join(", ")}. Run: pnpm add -D -w marked`
+    `Could not find a browser build of marked in ${pkgDir}. Tried: ${candidates.join(', ')}. Run: pnpm add -D -w marked`,
   );
 }
 
@@ -182,19 +182,19 @@ async function readMarkedBundle() {
 /** Escapes a build-time string for safe interpolation into the generated HTML. */
 function escapeHtmlAttr(s) {
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function toEmbeddedJson(value) {
   return JSON.stringify(value)
-    .replace(/</g, "\\u003c")
-    .replace(/>/g, "\\u003e")
-    .replace(/&/g, "\\u0026")
-    .replace(/\u2028/g, "\\u2028")
-    .replace(/\u2029/g, "\\u2029");
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 const CSS = String.raw`
@@ -802,25 +802,28 @@ async function main() {
   const marked = await readMarkedBundle();
   const title = await resolveTitle();
   const html = buildHtml({ docs, marked, title });
-  await writeFile(OUT_FILE, html, "utf8");
+  await writeFile(OUT_FILE, html, 'utf8');
 
   const bytes = Buffer.byteLength(html);
-  const size = bytes > 1024 * 1024 ? (bytes / 1024 / 1024).toFixed(2) + " MB" : Math.round(bytes / 1024) + " KB";
+  const size =
+    bytes > 1024 * 1024
+      ? (bytes / 1024 / 1024).toFixed(2) + ' MB'
+      : Math.round(bytes / 1024) + ' KB';
 
   const counts = new Map();
   for (const d of docs) counts.set(d.categoryLabel, (counts.get(d.categoryLabel) ?? 0) + 1);
 
-  console.log("Docs viewer built");
-  console.log("  output : " + path.relative(ROOT, OUT_FILE));
-  console.log("  size   : " + size);
-  console.log("  docs   : " + docs.length);
-  console.log("  marked : v" + marked.version + " (" + marked.file + ", inlined)");
-  console.log("  categories:");
-  for (const [label, count] of counts) console.log("    " + label.padEnd(20) + count);
-  console.log("\nOpen it with: open " + path.relative(ROOT, OUT_FILE));
+  console.log('Docs viewer built');
+  console.log('  output : ' + path.relative(ROOT, OUT_FILE));
+  console.log('  size   : ' + size);
+  console.log('  docs   : ' + docs.length);
+  console.log('  marked : v' + marked.version + ' (' + marked.file + ', inlined)');
+  console.log('  categories:');
+  for (const [label, count] of counts) console.log('    ' + label.padEnd(20) + count);
+  console.log('\nOpen it with: open ' + path.relative(ROOT, OUT_FILE));
 }
 
 main().catch((err) => {
-  console.error("Failed to build docs viewer:\n", err);
+  console.error('Failed to build docs viewer:\n', err);
   process.exit(1);
 });

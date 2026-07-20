@@ -1,0 +1,138 @@
+/**
+ * SpotKey design tokens — admin (web).
+ *
+ * Generated from docs/design/design-system.md. Components read roles, never raw values.
+ * Dark mode is a token remap only: if a component needs a `dark:` override, that is a
+ * missing token — add the token here instead.
+ */
+
+:root {
+  /* Surface & text */
+  --bg: #f5f7fa;
+  --fg: #1a2332;
+  --card: #ffffff;
+  --muted: #f1f5f9;
+  --muted-fg: #64748b;
+  --border: #e2e8f0;
+  --ring: #0f766e;
+
+  /* Action */
+  --primary: #0f766e;
+  --primary-fg: #ffffff;
+  --primary-hover: #14919b;
+  --primary-subtle: #ccfbf1;
+  --accent: #0891b2;
+
+  /* Status */
+  --destructive: #dc2626;
+  --destructive-subtle: #fee2e2;
+  --success: #047857;
+  --success-subtle: #d1fae5;
+  --warning: #b45309;
+  --warning-subtle: #fef3c7;
+  --info: #0e7c86;
+
+  /* Map. Green is deliberately absent — bookable IS the brand state. */
+  --map-available: #0f766e;
+  --map-occupied: #64748b;
+  --map-self: #0891b2;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* Elevation — tinted with the ink hue, not neutral black */
+  --shadow-1: 0 1px 2px rgba(10, 25, 41, 0.05);
+  --shadow-2: 0 3px 8px rgba(10, 25, 41, 0.12);
+  --shadow-3: 0 8px 16px rgba(10, 25, 41, 0.15);
+  --shadow-4: 0 16px 32px rgba(10, 25, 41, 0.2);
+
+  /* Layout — tokens, not magic numbers. Scroll math derives from these. */
+  --layout-header-height: 3.5rem;
+  --layout-sidebar-width-expanded: 240px;
+  --layout-sidebar-width-collapsed: 3.5rem;
+  --page-header-sticky-offset: var(--layout-header-height);
+  --app-content-height: calc(100svh - var(--layout-header-height));
+
+  /* Type */
+  --font-display: 'Poppins', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --motion-easing: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-theme='dark'],
+:root.dark {
+  --bg: #0a1929;
+  --fg: #f1f5f9;
+  --card: #14243a;
+  --muted: #14243a;
+  --muted-fg: #94a3b8;
+  --border: #1e3a52;
+  --ring: #2dd4bf;
+
+  --primary: #2dd4bf;
+  --primary-fg: #0a1929;
+  --primary-hover: #5eead4;
+  --primary-subtle: #134e4a;
+  --accent: #22d3ee;
+
+  --destructive: #f87171;
+  --destructive-subtle: #450a0a;
+  --success: #34d399;
+  --success-subtle: #064e3b;
+  --warning: #fbbf24;
+  --warning-subtle: #451a03;
+  --info: #67e8f9;
+
+  --map-available: #2dd4bf;
+  --map-occupied: #94a3b8;
+  --map-self: #22d3ee;
+
+  /*
+   * Elevation inverts in dark: surfaces lighten to rise, shadows do not deepen.
+   * A shadow-only card is invisible here — pair it with --border.
+   */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 3px 8px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.55);
+  --shadow-4: 0 16px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Follow the OS unless an explicit choice is stamped on the root. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0a1929;
+    --fg: #f1f5f9;
+    --card: #14243a;
+    --muted: #14243a;
+    --muted-fg: #94a3b8;
+    --border: #1e3a52;
+    --ring: #2dd4bf;
+
+    --primary: #2dd4bf;
+    --primary-fg: #0a1929;
+    --primary-hover: #5eead4;
+    --primary-subtle: #134e4a;
+    --accent: #22d3ee;
+
+    --destructive: #f87171;
+    --destructive-subtle: #450a0a;
+    --success: #34d399;
+    --success-subtle: #064e3b;
+    --warning: #fbbf24;
+    --warning-subtle: #451a03;
+    --info: #67e8f9;
+
+    --map-available: #2dd4bf;
+    --map-occupied: #94a3b8;
+    --map-self: #22d3ee;
+  }
+}

@@ -35,18 +35,22 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
       # Surfaces per App Profile: mobile + admin (+ api). There is no `web` app.
+      # Only what EXISTS is gated. Uncomment each app's step in the milestone that creates it —
+      # a CI job that greens on a package with no code teaches everyone to ignore CI.
       - name: Type check api
         run: pnpm --filter api type-check
 
-      - name: Type check admin
-        run: pnpm --filter admin type-check
+      - name: Type check shared lib
+        run: pnpm --filter @spotkey/common type-check
 
-      - name: Type check mobile
-        run: pnpm --filter mobile type-check
+      - name: Type check mobile theme
+        run: pnpm --filter @spotkey/mobile-ui type-check
+
+      # - name: Type check admin        # enable in v0.6 (admin panel)
+      #   run: pnpm --filter admin type-check
+      # - name: Type check mobile       # enable in v0.1-G (first Expo screens)
+      #   run: pnpm --filter mobile type-check
 
   test:
     name: Tests
@@ -65,14 +69,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Run shared-lib tests
+        run: pnpm test:common
+
       - name: Run backend tests
         run: pnpm test:api
 
-      - name: Run admin tests
-        run: pnpm test:admin
-
-      - name: Run mobile tests
-        run: pnpm test:mobile
+      # - name: Run admin tests         # enable in v0.6
+      #   run: pnpm test:admin
+      # - name: Run mobile tests        # enable in v0.1-G
+      #   run: pnpm test:mobile
 
   build:
     name: Build

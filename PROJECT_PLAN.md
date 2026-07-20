@@ -95,7 +95,8 @@ one.
       real device — not a simulator, and not only in daylight. The dark token set was derived, not
       designed, so `v0.1` is where it gets validated.
 - [ ] **No hardcoded colour values** anywhere in `apps/mobile` or `apps/admin`.
-- [ ] **Known Gotcha 2 resolved:** where Accept Terms sits relative to Profile Completion is
+- [x] ~~**Known Gotcha 2 resolved:**~~ **Done 2026-07-20** — Gate 1 terms → Gate 2 profile. Was:
+      where Accept Terms sits relative to Profile Completion is
       settled in the docs, and 01/02/19 agree.
 
 ### `v0.2` — Spaces exist

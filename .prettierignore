@@ -1,0 +1,11 @@
+node_modules
+dist
+.next
+.expo
+pnpm-lock.yaml
+apps/api/src/db/migrations
+
+# Markdown is hand-formatted: ~100-char wrapping, ASCII flow diagrams, and alignment-sensitive
+# tables are editorial conventions (CLAUDE.md → Editorial conventions). Prettier reflows them.
+*.md
+docs/viewer.html

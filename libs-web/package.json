@@ -1,0 +1,8 @@
+{
+  "name": "@spotkey/web-ui",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "type-check": "echo 'no TS yet \u2014 tokens.css only'"
+  }
+}

@@ -255,10 +255,12 @@ unchanged; only the execution order differs.
 These are contradictions found in the specs during initialisation. They are **unresolved** —
 resolve them in the doc before implementing the affected flow, never in code first.
 
-1. **Terms acceptance is missing from the login flow.** `features/19-terms-acceptance-flow.md`
-   puts Accept Terms between OTP verify and Profile Completion, but `features/01-login-flow.md`
-   and `features/02-after-login-flow.md` both route OTP → profile check with no terms step. Docs
-   01 and 02 are stale.
+1. ~~**Terms acceptance is missing from the login flow.**~~ **Resolved 2026-07-20.** The
+   post-OTP route is now **two gates in this order**: Gate 1 accepted-current-terms-version → Gate
+   2 `isProfileComplete`. Terms precedes Profile Completion because that screen collects name,
+   email and UPI ID, and consent must precede collecting personal data. Gate 1 is a *version*
+   check, so it re-fires for returning users when terms change. Docs 01 and 02 updated;
+   `features/19-terms-acceptance-flow.md` is the authority.
 
 2. **The autopay mandate gate contradicts the billing toast.**
    `features/23-upi-autopay-mandate-flow.md:69` makes an active mandate a hard precondition for

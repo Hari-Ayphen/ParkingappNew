@@ -70,15 +70,32 @@ IS USER LOGGED IN? (check stored token)
           - Stores user object (Zustand store)
               ↓
         ┌─────────────────────────────────────┐
-        │   CHECK: user.isProfileComplete?     │
+        │  GATE 1 — has the user accepted the  │
+        │  CURRENT terms version?              │
         └─────────────────────────────────────┘
               │
-              ├── FALSE → Go to Profile Completion
-              │           (see POST_LOGIN_FLOW.md)
+              ├── NO  → ACCEPT TERMS screen
+              │         (see 19-terms-acceptance-flow.md)
+              │         → records acceptance, then falls through
               │
-              └── TRUE  → Go directly to Home Screen
-                          (see POST_LOGIN_FLOW.md)
+              └── YES ↓
+        ┌─────────────────────────────────────┐
+        │  GATE 2 — user.isProfileComplete?    │
+        └─────────────────────────────────────┘
+              │
+              ├── FALSE → Profile Completion
+              │           (see 02-after-login-flow.md)
+              │
+              └── TRUE  → Home Screen
+                          (see 02-after-login-flow.md)
 ```
+
+> **Terms comes before Profile Completion, always.** Profile Completion collects name, email and
+> UPI ID. Collecting personal data *before* the user has accepted the privacy policy that governs
+> its processing is backwards — consent precedes collection, not the other way round.
+>
+> Gate 1 also fires for **returning** users whose accepted version is older than the current one
+> (`19-terms-acceptance-flow.md`), so it is a version check, not a new-account check.
 
 ---
 
@@ -191,9 +208,10 @@ enforced by a unique index. Recorded in [`../architecture/data.md`](../architect
 
 - [ ] OTP expiry duration and the failed-attempt ceiling — not specified anywhere.
 - [ ] Rate-limit thresholds for `request-otp`, per phone and per IP.
-- [ ] **Does Accept Terms sit between verify and profile completion?**
-      `19-terms-acceptance-flow.md` says yes; this doc and `02` don't mention it.
-      *(Known Gotcha 2 — must be resolved before this milestone closes.)*
+- [x] ~~**Does Accept Terms sit between verify and profile completion?**~~ **Resolved 2026-07-20
+      (Known Gotcha 2):** yes. Terms is Gate 1, Profile Completion is Gate 2 — consent must precede
+      collecting the personal data on the profile screen. `19-terms-acceptance-flow.md` is the
+      authority; this doc and `02` were stale and are now updated.
 
 ---
 

@@ -15,7 +15,13 @@ This document covers everything that happens **immediately after a successful lo
 LOGIN + OTP VERIFIED SUCCESSFULLY
               ↓
 ┌───────────────────────────────────────┐
-│  CHECK: user.isProfileComplete?        │
+│  GATE 1 — accepted the CURRENT terms   │
+│  version? (19-terms-acceptance-flow)   │
+│  NO → Accept Terms, then fall through  │
+└───────────────────────────────────────┘
+              ↓
+┌───────────────────────────────────────┐
+│  GATE 2 — user.isProfileComplete?      │
 └───────────────────────────────────────┘
               ↓
         FALSE            TRUE
@@ -166,9 +172,10 @@ Record in [`../architecture/data.md`](../architecture/data.md).
 
 ## Open questions
 
-- [ ] **Does Accept Terms sit between OTP verify and Profile Completion?**
-      `19-terms-acceptance-flow.md` says yes; this doc and `01-login-flow.md` don't mention it.
-      *(Known Gotcha 2 — must be resolved before this milestone closes.)*
+- [x] ~~**Does Accept Terms sit between OTP verify and Profile Completion?**~~ **Resolved
+      2026-07-20 (Known Gotcha 2):** yes — Terms is Gate 1, Profile Completion is Gate 2. Consent
+      must precede collecting the name, email and UPI ID this screen asks for.
+      `19-terms-acceptance-flow.md` is the authority; this doc's flow diagram is now updated.
 - [ ] Is the UPI ID validated for format, and is it verified against a real VPA before being
       saved? A typo here silently breaks both the exit QR and the owner's mandate, and the doc is
       silent on both.

@@ -233,9 +233,12 @@ resolve them in the doc before implementing the affected flow, never in code fir
    the first toggle-ON. `features/14-billing-logic.md` and `features/08-my-space-flow.md` show
    toggle → toast → billing with no mandate step. The owner's first-run sequence is ambiguous.
 
-3. **Daily-charge rule is hedged.** `features/14-billing-logic.md` still doesn't define what "ON
-   for a day" means — any moment of ON, or the state at a cutoff time? This decides whether an
-   owner who flips ON for five minutes pays a full day. Settle before implementing billing.
+3. ~~**Daily-charge rule is hedged.**~~ **Resolved 2026-07-20 (ADR-0006).** A calendar day is
+   billable at **one hour or more cumulative, IST**; below that it is free. Alongside it, two
+   other money rules that were undefined are now settled: billable duration rounds **up to 15
+   minutes with a 30-minute minimum, amount up to whole rupees**, and the session clock runs from
+   **OTP verification to the Parker signalling exit** — never to the Owner's confirmation, so
+   Owner latency cannot inflate a bill.
 
 3b. **The platform rate table does not exist.** The *shape* is decided — daily rate is a function
    of **slot count × vehicle type**, never a flat fee (`CORE_DOCUMENT.md`,

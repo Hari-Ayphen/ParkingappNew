@@ -140,6 +140,29 @@ adjudicate, since neither of us can change the number ourselves**.
 
 ## Business rules
 
+- **BR-0:** **How duration becomes money.** Three steps, in this order:
+
+  1. **Billable duration** = actual elapsed time **rounded up to the next 15 minutes**.
+  2. **Minimum billable duration** = 30 minutes. Anything shorter bills as 30 minutes.
+  3. **Final amount** = billable duration × locked hourly rate, **rounded up to whole rupees**
+     (stored in paise, always a multiple of 100).
+
+  Worked: 1h05m at ₹30/hr → billable 1h15m → ₹37.50 → **₹38**.
+
+  > **Why round up, and why 15 minutes.** The slot cannot be re-let for the thirteen minutes
+  > someone overstayed, so partial blocks are a real cost to the owner. But rounding up to the
+  > *hour* — the common parking convention — would turn 1h05m into ₹60 against ₹37.50 of actual
+  > use, which reads as a penalty. Fifteen minutes tracks consumption closely enough to feel fair
+  > while still compensating the owner for a slot they cannot resell.
+  >
+  > **Why whole rupees.** Payment happens outside the app, frequently in cash
+  > (`06-booking-flow.md`). An amount of ₹37.50 is not payable in cash without change neither
+  > party is carrying. Every figure the app prints must be handable, note for note.
+  >
+  > **Why a 30-minute minimum.** A five-minute session still consumed a slot, an OTP handshake,
+  > condition photos and the owner's attention. Billing ₹2.50 for it is not worth either party's
+  > time, and it makes trivially short bookings a way to occupy a space for nearly nothing.
+
 - **BR-1:** **The final amount is system-calculated and cannot be overridden.** It is duration ×
   `locked_hourly_rate_paise`. This is deliberate — an editable amount at the point of handover turns
   every session into a negotiation and every disagreement into a dispute (Invariant 2).
@@ -201,9 +224,10 @@ the whole space). Both in
 
 ## Open questions
 
-- [ ] **How is duration rounded into the final amount?** Per minute, per 15 minutes, or a full-hour
-      minimum? Undefined, and it changes every figure the app prints.
-- [ ] Is there a minimum billable duration for a session that ends within minutes of starting?
+- [x] ~~**How is duration rounded into the final amount?**~~ **Resolved 2026-07-20 (ADR-0006):**
+      round elapsed time up to the next 15 minutes, apply a 30-minute minimum, then round the
+      amount up to whole rupees. See BR-0.
+- [x] ~~Is there a minimum billable duration?~~ **Resolved 2026-07-20:** 30 minutes (BR-0).
 - [ ] Is the exit photo mandatory or optional? The flow shows it, but no rule says confirm is
       blocked without it.
 - [ ] What happens if the owner never confirms exit — does the session auto-complete after a

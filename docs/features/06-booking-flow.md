@@ -318,8 +318,28 @@ the only signal there is, since nothing was vetted up front**.
 - **BR-10:** The session has **exactly six sub-states**: Arriving, Condition Check, OTP
   Acknowledgement, OTP Display, Active, Exit Verification. They are a lookup table, not a `text`
   enum, and every transition is appended to the session state log.
-- **BR-11:** Billing time starts at **OTP verification**, not at approval and not at arrival. Only
-  the Active sub-state accrues cost.
+- **BR-11:** **The billable clock runs from OTP verification to the Parker signalling exit.**
+
+  - **Starts** when the OTP handshake completes and the session enters **Active** — not at
+    approval, not at arrival. Only the Active sub-state accrues cost.
+  - **Stops** the moment the **Parker** signals departure and the session enters **Exit
+    Verification** — *not* when the Owner later confirms it.
+
+  > **Why it starts at the OTP handshake.** That is the first moment both parties have agreed the
+  > car is in the space. Starting at approval would bill the Parker for travelling; starting at
+  > arrival would bill them for traffic and for the condition-check photos, neither of which is
+  > parking.
+  >
+  > **Why it stops at the Parker's signal, not the Owner's confirmation.** The Owner may be
+  > asleep, at work, or simply slow. If the clock ran until they tapped confirm, **the Parker
+  > would pay for the Owner's latency** — an amount the Parker cannot influence, cannot predict,
+  > and (since payment is external and untracked) has no mechanism to dispute except human
+  > mediation. Worse, it gives the Owner a standing financial incentive to delay. Ending the
+  > clock at the Parker's signal removes both problems; the Owner's confirmation still validates
+  > condition and closes the session, it just cannot inflate the bill.
+
+- **BR-11b:** Billable duration is then rounded per `12-exit-verification-flow.md` BR-0 — up to the
+  next 15 minutes, 30-minute minimum, amount rounded up to whole rupees.
 - **BR-12:** Only the **Owner** ends a session, via exit verification. The Parker can signal intent
   to leave but cannot finalise.
 - **BR-13:** All money is **integer paise**. Never a float, never rupees-as-decimal.
@@ -382,8 +402,9 @@ All recorded in [`../architecture/data.md`](../architecture/data.md).
 - [ ] **The request expiry window is unstated.** `10-booking-requests-flow.md:44` gives "e.g. 5
       minutes" as an illustration, not a decision. This is load-bearing — it decides how long a
       Parker waits at a kerb.
-- [ ] **What starts the billing clock, precisely?** BR-11 says OTP verification, but no doc states
-      it outright. If it were approval or arrival instead, every amount changes.
+- [x] ~~**What starts the billing clock, precisely?**~~ **Resolved 2026-07-20 (ADR-0006):** it runs
+      from OTP verification (entry to Active) until the **Parker** signals exit — not until the
+      Owner confirms, so Owner latency can never inflate the bill. See BR-11.
 - [ ] **Duration is chosen at Confirm, but nothing enforces it.** Is the requested duration a cap,
       an estimate, or ignored at billing? What happens when a Parker overstays it?
 - [ ] **Can a Parker cancel a request or an approved booking?** `booking_status` has

@@ -61,6 +61,12 @@ and vehicle type** so that **a pricing change is a data change, not a deploy**.
 As an **owner**, I can **be charged only for the calendar days my space was live** so that
 **turning it off genuinely costs me nothing**.
 
+- **AC0:** Given a space live for **less than one hour cumulative** in a calendar day (IST), when
+  that day closes, then it contributes `0` paise — the day is not billable (§2b).
+- **AC0b:** Given a space live for **one hour or more cumulative**, when that day closes, then the
+  day is billable in full at that space's rate — cumulative across every on/off spell that day.
+- **AC0c:** Given a space carrying an active session at any point in a day, when that day closes,
+  then it is billable regardless of toggle state or the one-hour rule.
 - **AC1:** Given a space live for a calendar day, when that day closes, then exactly one
   `space_live_day` row exists for (`space_id`, `date`) with `was_live = true` and
   `charged_paise` set to the rate as applied that day.
@@ -196,15 +202,16 @@ penalty, reset, or losing my place in the cycle**.
 - [ ] **The `platform_rate` table has no values.** The shape is decided (slots × vehicle type,
       ADR-0003); the numbers are pending from the product owner. **This blocks the entire
       milestone** — nothing here can be tested end to end without them.
-- [ ] **What does "ON for a calendar day" actually mean?** Any moment of ON during the day, or
-      the toggle state sampled at a fixed cutoff time? This decides whether five minutes of ON
-      costs a full day. *(Known Gotcha 3 — settle before implementing the meter.)*
+- [x] ~~**What does "ON for a calendar day" actually mean?**~~ **Resolved 2026-07-20 (ADR-0006):**
+      one hour or more cumulative within the day, IST. Below that the day is free. A day carrying
+      an active session is always billable. Full reasoning in §2b.
 - [ ] **Is an active autopay mandate required before the first toggle-ON?**
       `23-upi-autopay-mandate-flow.md:69` says yes, and `architecture/data.md` Invariant 3 encodes
       it. This doc and `08-my-space-flow.md` show toggle → toast → billing with no mandate step.
       *(Known Gotcha 2 — the owner's first-run sequence is ambiguous and must be resolved before
       this milestone closes.)*
-- [ ] Which timezone defines a "calendar day"? IST for everyone, or the space's local time?
+- [x] ~~Which timezone defines a "calendar day"?~~ **Resolved 2026-07-20:** IST for everyone. All
+      users are in one timezone, so there is no per-space boundary to compute (§2b).
 - [ ] Is a zero-total invoice still issued for the record, or is invoicing skipped entirely for a
       cycle with no live days?
 - [ ] Does a space toggled OFF mid-day, on a day already metered as live, stay charged? BR-3 of
@@ -261,6 +268,37 @@ owner declares slot count and supported vehicle types.
 
 ---
 
+## 2b. What "live for a calendar day" means
+
+**A calendar day is billable if the space was live for one hour or more, cumulative, within that
+day in IST.** Below one hour, the day is free.
+
+- **Cumulative, not continuous.** Toggling on and off repeatedly sums; three twenty-minute spells
+  make a billable day.
+- **Day boundary is midnight IST.** Every user is in one timezone, so there is no per-user
+  boundary to compute and no ambiguity about which day an evening toggle belongs to.
+- **A day carrying an active session is always billable**, regardless of toggle state or the
+  one-hour rule. If someone is parked in the space, it was in service.
+
+> **Why a one-hour floor and not "any moment counts".** Charging a full day for a five-minute
+> toggle makes the switch a trap: an owner who flips it on to check something, or turns it on and
+> immediately thinks better of it, gets billed a full day. Owners learn to fear the toggle, stop
+> experimenting, and leave spaces off — which empties the map, the one outcome the whole pricing
+> model exists to avoid.
+>
+> **Why not pro-rata by the hour.** It is fairer in the abstract but it destroys the product's one
+> sentence: *"you pay for each day your space is on."* An owner has to understand this from a
+> toast on a phone. A cliff at one hour is explainable; a formula is not.
+>
+> **Why an hour and not a shorter grace.** Under an hour, a space cannot realistically be found,
+> requested, and approved — so nothing of value was supplied. An hour is roughly the smallest
+> window in which the listing could actually have earned anything.
+
+The cliff is accepted deliberately: 59 minutes is free and 61 minutes is a full day. That edge is
+visible and understandable, which a proportional formula would not be.
+
+---
+
 ## 3. Daily Charge Logic — Only ON Days Count
 
 Billing is calculated **per calendar day**, based on whether the toggle was ON for that day.
@@ -270,10 +308,9 @@ Billing is calculated **per calendar day**, based on whether the toggle was ON f
 - If the toggle is **OFF** on a given day → that day contributes **₹0**, nothing is added.
 - The owner can toggle ON and OFF as many times as they want, any day, with no restriction and no penalty — only the resulting ON/OFF state per day matters for billing.
 
-> **`[OPEN]` "ON for a day" is still not precisely defined.** Does any moment of ON count, or is
-> the state sampled at a cutoff time? This decides whether an owner who flips ON for five minutes
-> is charged a full day. Settle it before implementing — it is the difference between a fair
-> meter and a trap.
+> **"ON for a day" is defined in §2b:** one hour or more cumulative within the calendar day (IST).
+> Under an hour the day is free, which stops the toggle being a trap for an owner who flips it on
+> briefly and thinks better of it.
 
 ### Example
 

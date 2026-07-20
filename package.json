@@ -1,0 +1,24 @@
+{
+  "name": "spotkey",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:api": "pnpm --filter api test",
+    "test:admin": "pnpm --filter admin test",
+    "test:mobile": "pnpm --filter mobile test",
+    "test:e2e:mobile": "pnpm --filter mobile test:e2e",
+    "test:e2e:admin": "pnpm --filter admin test:e2e",
+    "db:generate": "pnpm --filter api db:generate",
+    "db:migrate": "pnpm --filter api db:migrate",
+    "db:studio": "pnpm --filter api db:studio",
+    "db:seed": "pnpm --filter api db:seed",
+    "docs:viewer": "node scripts/build-docs-viewer.mjs"
+  },
+  "devDependencies": {
+    "marked": "^14.1.3"
+  }
+}

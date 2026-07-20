@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.next/
+.expo/
+coverage/
+
+.env
+.env.local
+.env.*.local
+
+docs/viewer.html
+
+.DS_Store
+*.log

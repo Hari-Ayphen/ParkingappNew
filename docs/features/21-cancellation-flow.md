@@ -16,9 +16,9 @@ BOOKING HISTORY (Active tab) → open a not-yet-started booking
               ↓
 ┌─────────────────────────────────────┐
 │         BOOKING DETAIL                  │
-│  "Cancel Booking" button (only visible     │
-│   before the session has started —            │
-│   i.e., before "Arriving" state begins)          │
+│  "Cancel Booking" button (visible up to    │
+│   and including "Arriving" — gone once         │
+│   "Condition Check" begins)                       │
 └─────────────────────────────────────┘
               ↓
         Tap "Cancel Booking"
@@ -76,15 +76,15 @@ not-yet-started booking
 As a **Parker**, I can **cancel a booking I no longer need, before the session starts** so that
 **the owner isn't left holding a slot for someone who won't arrive**.
 
-- **AC1:** Given an approved booking that has not reached "Arriving", when I open its detail, then
-  a "Cancel Booking" button is visible.
+- **AC1:** Given an approved booking that is not yet started **or is in "Arriving"**, when I open
+  its detail, then a "Cancel Booking" button is visible.
 - **AC2:** Given I tap "Cancel Booking", when the confirmation sheet opens, then it offers an
   optional reason and warns that frequent cancellation may affect my account standing.
 - **AC3:** Given I confirm, when the request succeeds, then the booking moves to my Cancelled tab
   and the owner is notified.
 - **AC4:** Given I tap "Keep Booking", when the sheet closes, then nothing changes.
-- **AC5:** Given the session has moved past "Arriving", when I open the booking, then **no cancel
-  action is offered** and the normal session/exit flow applies.
+- **AC5:** Given the session has reached **"Condition Check" or any later sub-state**, when I open
+  the booking, then **no cancel action is offered** and the normal session/exit flow applies.
 - **AC6:** Given the booking was already cancelled by the owner, when I confirm a cancel, then the
   request is rejected and I see the current state rather than a double cancellation.
 
@@ -99,8 +99,8 @@ so that **the parker finds out in time to park somewhere else**.
   is blocked — the reason is **required** for owner cancellation.
 - **AC3:** Given I confirm with a reason, when it succeeds, then the parker is notified **with
   that reason** and the booking moves to Cancelled on both sides.
-- **AC4:** Given the session has moved past "Arriving", when I open the booking, then no cancel
-  action is offered.
+- **AC4:** Given the session has reached **"Condition Check" or any later sub-state**, when I open
+  the booking, then no cancel action is offered.
 
 ### US-3 — Get back to searching after an owner cancels (Parker)
 
@@ -143,8 +143,20 @@ so that **one bad day doesn't cost me the rest of the day's bookings**.
 
 ## Business rules
 
-- **BR-1:** Cancellation is only possible **before the session moves past "Arriving"**. Once past
-  it, only the normal session/exit flow applies (`06-booking-flow.md`).
+- **BR-1:** Cancellation is available **up to and including the "Arriving" sub-state**, and is
+  unavailable from **"Condition Check"** onward. The cut-off is the moment Condition Check begins,
+  not the moment Arriving begins.
+
+  > **Why the boundary sits here.** "Arriving" means the Parker is en route — no vehicle is
+  > present, no condition photos exist, nothing physical has happened. "Condition Check" is the
+  > first state where the car is actually in the space; cancelling after that is meaningless
+  > because the thing being cancelled has already occurred.
+  >
+  > The failure this prevents: if Arriving were non-cancellable, a Parker who changes their mind
+  > in traffic has **no exit** — they simply never arrive. The session then hangs with no
+  > terminal timeout (see `11-active-bookings-owner-flow.md` open questions), the space stays
+  > blocked, and the Owner is left guessing. An explicit cancellation is strictly better than a
+  > silent no-show: the Owner is notified and the space is freed immediately.
 - **BR-2:** **Cancellation cannot trigger a refund.** SpotKey holds no Parker→Owner money — there
   is nothing charged in-app to refund. Building a refund path would imply a guarantee the product
   cannot honour.
@@ -171,7 +183,7 @@ so that **one bad day doesn't cost me the rest of the day's bookings**.
 | `account_flag` | new | Trust flag raised when the rolling-window threshold is crossed; reason FK, raised_at, admin resolution |
 
 **Invariants this introduces:** `cancelled_at`, `cancelled_by_user_id` and the status are set
-together or not at all; a booking whose session passed "Arriving" can never acquire a
+together or not at all; a booking whose session reached "Condition Check" can never acquire a
 `cancelled_at`; **no row in this feature touches any billing, invoice, or fee table** — the absence
 is the rule. Record in [`../architecture/data.md`](../architecture/data.md).
 
@@ -188,7 +200,7 @@ is the rule. Record in [`../architecture/data.md`](../architecture/data.md).
 
 - **Refunds, cancellation fees, penalties, or credits of any kind.** There is no in-app money to
   move.
-- **Cancelling after "Arriving".** That is the session/exit flow, `06` and `12`.
+- **Cancelling from "Condition Check" onward.** That is the session/exit flow, `06` and `12`.
 - **Rejecting a booking request** before approval — that is `10-booking-requests-flow.md`, a
   different act with a different status.
 - **Auto-expiry of an unanswered request** — also `10`.
@@ -202,9 +214,9 @@ is the rule. Record in [`../architecture/data.md`](../architecture/data.md).
 - [ ] **The frequent-cancellation threshold and rolling-window length are unconfirmed** — the doc
       says "beyond a threshold in a rolling window" with no numbers. Are they the same for parkers
       and owners?
-- [ ] Is "Arriving" itself cancellable, or is the cut-off the moment "Arriving" begins? The Parker
-      diagram says "before Arriving state begins"; the Key Behavior table says "past Arriving".
-      These are not the same boundary and one booking will fall in the gap.
+- [x] ~~Is "Arriving" itself cancellable?~~ **Resolved 2026-07-20:** yes. Cancellation is
+      available up to and including "Arriving"; the cut-off is the start of "Condition Check".
+      See BR-1 for the reasoning.
 - [ ] Does the flag threshold count owner and parker cancellations against the same account
       separately, or as one combined count for one-account-two-modes?
 - [ ] What is the exact parker-side reason list? The Owner list is specified; the Parker's is only
@@ -220,7 +232,7 @@ is the rule. Record in [`../architecture/data.md`](../architecture/data.md).
 
 | Element | Behavior |
 |---|---|
-| Cut-off point | Once a session has moved past "Arriving" into any active sub-state (see `06-booking-flow.md`), cancellation is no longer available — only the normal session/exit flow applies |
+| Cut-off point | Cancellation is available **up to and including "Arriving"**. Once a session reaches **"Condition Check"** or any later sub-state (see `06-booking-flow.md`), cancellation is no longer available — only the normal session/exit flow applies. See BR-1 |
 | No in-app penalty processing | Since there's no in-app payment, cancellation cannot trigger a refund flow — there's nothing charged in-app to refund. Repeated cancellations are tracked as a **trust signal** only (see below) |
 | Frequent-cancellation flag | If a Parker or Owner cancels beyond a threshold in a rolling window, their account is flagged for admin review (`MODERATION.md` in the admin panel) — this is a trust/safety measure, not a billing one |
 | Owner cancelling a live-toggle day | Cancelling a booking does **not** toggle the space OFF or affect that day's billing count in `14-billing-logic.md` — those are independent |

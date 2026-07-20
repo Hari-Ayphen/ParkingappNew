@@ -126,7 +126,17 @@ that **camera access is never requested before I've booked anything**.
   is requested by the screen that consumes it, at the moment it consumes it — asking early raises
   denial rates and the denial is sticky.
 - **BR-2:** The first-launch flag is **local to the install**, not server-side. Onboarding is a
-  property of the device, not the account.
+  property of the device, not the account. It therefore **survives logout but not reinstall**, and
+  the slides may legitimately be seen more than once by the same person.
+
+  > **A server-side flag is not merely undesirable here — it is impossible.** Onboarding runs
+  > *before* Login (BR-3), so on the first launch after a reinstall the app does not yet know who
+  > the user is. There is no account to key a server flag on. Storing it server-side would require
+  > authenticating first, which inverts the flow this document specifies.
+  >
+  > The cost of accepting this is small: a returning user who reinstalls sees two or three intro
+  > slides again. The cost of "fixing" it is making every user log in before they are told what
+  > the app does.
 - **BR-3:** The onboarding slides are shown only before Login, never between Login and Home.
 - **BR-4:** The splash performs the session check silently. It never renders a login form, an
   error dialog, or a permission prompt.
@@ -163,9 +173,9 @@ onboarding state is per-install and must never be inferred from, or written to, 
 
 ## Open questions
 
-- [ ] The Key Behavior table says slides are never shown again "even after reinstall", but the
-      flag is tracked locally — a reinstall wipes local storage. Either the claim or the storage
-      is wrong. Which?
+- [x] ~~The reinstall claim contradicts the local flag.~~ **Resolved 2026-07-20:** the storage is
+      right, the claim was wrong. Slides survive logout, not reinstall. A server-side flag is
+      impossible because onboarding precedes login — see BR-2.
 - [ ] Number of onboarding slides — "2-3 screens" is a range, not a decision.
 - [ ] What the splash does when the session check cannot reach the API (offline / API down):
       route to Login, retry, or show an offline state? Unspecified, and it decides whether an
@@ -187,7 +197,7 @@ onboarding state is per-install and must never be inferred from, or written to, 
 
 | Element | Behavior |
 |---|---|
-| Onboarding slides | Shown once, ever, on first install — never shown again even after logout/reinstall on the same account (tracked locally, not server-side) |
+| Onboarding slides | Shown once per install. **Survives logout** — logging out never replays them. **Does not survive reinstall** — a reinstall wipes the local flag and the slides show again. This is accepted, not a bug; see BR-2 |
 | Session check | Splash screen is also where the stored JWT/refresh token is validated silently (see `01-login-flow.md` token handling) before deciding where to route the user |
 | Permission philosophy | Never request a permission before the screen that needs it — asking for camera access on the splash screen (before the user has even booked anything) causes higher denial rates |
 

@@ -250,7 +250,7 @@ resolve them in the doc before implementing the affected flow, never in code fir
 
 5. **WhatsApp BSP is unchosen** and carries template-approval lead time. Blocks invoice delivery.
 
-6. **Stray product name** — `features/12-exit-verification-flow.md:51` reads "ParkSwift/SpotKey".
+6. ~~**Stray product name** in `features/12-exit-verification-flow.md`.~~ **Fixed 2026-07-20.**
 
 7. **Some doc cross-links still break.** Renaming to the hyphenated form during migration fixed
    most. Remaining stragglers point at an older `features/parker-flow.md` / `owner-flow.md` /

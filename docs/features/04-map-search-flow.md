@@ -162,8 +162,9 @@ that **I don't drive to a space that stopped being available while I was looking
   but toggled-OFF space is invisible here — publishing is not the same as being live.
 - **BR-2:** A space with `space_status = suspended` never appears, regardless of `is_live`. Admin's
   lever outranks the owner's.
-- **BR-3:** A space with an **active session** does not appear as bookable — one active session per
-  space at a time (Invariant 4).
+- **BR-3:** A space stops appearing as bookable only when **every one of its active slots** has a
+  live session — one active session per **slot** (Invariant 4, ADR-0005). A 10-slot lot with 3 cars
+  in it is still bookable.
 - **BR-4:** **Search re-centres; filters filter.** They are separate mechanisms and neither
   silently resets the other.
 - **BR-5:** Amenity filtering is **conjunctive** (all selected must be present). A parker choosing
@@ -185,8 +186,9 @@ that **I don't drive to a space that stopped being available while I was looking
 | `booking_session` | read | To exclude spaces with an open session |
 | `rating` | read (aggregate) | Card rating — computed on read, not stored |
 
-**Invariants this relies on:** Invariant 4 (one active session per space) is what makes "occupied"
-a single, unambiguous fact this screen can render. This feature introduces no new invariants.
+**Invariants this relies on:** Invariant 4 (one active session per **slot** — ADR-0005). "Occupied"
+is therefore *all slots busy*, computed as `COUNT(free active slots) = 0`, not a boolean on the
+space. This feature introduces no new invariants.
 
 ## Screens
 

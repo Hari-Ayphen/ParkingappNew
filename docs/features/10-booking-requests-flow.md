@@ -99,9 +99,11 @@ double-book a slot I only have once**.
 
 - **AC1:** Given two parkers have requested the same space, when I approve one, then the other
   request is automatically closed and its parker is notified the slot is taken.
-- **AC2:** Given a space already has an active session, when an approval for a second booking on
-  that space is attempted, then the server rejects it — the partial unique index on
-  `booking_session(space_id) WHERE ended_at IS NULL` is the authority (Invariant 4).
+- **AC2:** Given every active slot on a space is already busy, when an approval for a further
+  booking on that space is attempted, then the server rejects it — the partial unique index on
+  `booking_session(space_slot_id) WHERE ended_at IS NULL` is the authority (Invariant 4).
+- **AC2b:** Given a multi-slot space with free slots, when I approve a request, then the server
+  assigns a free `space_slot` to the booking and other requests remain approvable up to capacity.
 - **AC3:** Given I tap Approve on a request that has already been resolved by the race, when the
   call returns, then I see a "this request is no longer pending" message rather than a generic
   error.
@@ -139,9 +141,11 @@ close for the evening without abandoning anyone already parked**.
   `requested` booking; only the owner's approval makes it real.
 - **BR-2:** A request **auto-expires** if the owner does not respond within the configured window.
   An expired request cannot later be approved — the parker has already been told to move on.
-- **BR-3:** **Only one active session per space** (Invariant 4). Where two requests compete, the
-  first approval wins and the loser is auto-notified. The DB partial unique index is the authority;
-  a service-layer check alone is not sufficient under a real race.
+- **BR-3:** **Only one active session per slot** (Invariant 4, ADR-0005). A space can run as many
+  concurrent sessions as it has active slots; approval assigns a free slot. Where two requests
+  compete for the last free slot, the first approval wins and the loser is auto-notified. The DB
+  partial unique index on `space_slot_id` is the authority; a service-layer check alone is not
+  sufficient under a real race.
 - **BR-4:** Approval **locks the hourly rate** onto the booking. A later edit to the space's rate
   must never re-price a booking that is already approved (Invariant 1).
 - **BR-5:** Requests only reach an owner while the space's toggle is **ON**. Toggling OFF removes
@@ -161,7 +165,7 @@ close for the evening without abandoning anyone already parked**.
 | `session_state_event` | new row | Append-only: the first transition into `arriving` |
 | `notification` | new rows | Approval / rejection / expiry / slot-taken, each with a `deep_link` |
 
-**Invariants this flow relies on:** Invariant 4 (one active session per space) and Invariant 1
+**Invariants this flow relies on:** Invariant 4 (one active session per **slot**) and Invariant 1
 (rate frozen at confirm time). Both recorded in
 [`../architecture/data.md`](../architecture/data.md).
 

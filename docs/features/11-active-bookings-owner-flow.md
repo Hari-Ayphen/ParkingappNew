@@ -141,8 +141,9 @@ As an **owner**, I can **toggle a space OFF without disturbing anyone currently 
   requests.
 - **BR-7:** Owner and parker must see the **same** timer and running amount. A divergence between
   the two screens is a defect, not a display nuance.
-- **BR-8:** At most **one active session per space** (Invariant 4) — so a space appears at most once
-  in this list.
+- **BR-8:** At most **one active session per slot** (Invariant 4, ADR-0005) — so a multi-slot space
+  can appear **several times** in this list, once per busy slot, and each row must identify which
+  slot it is.
 
 ## Data touched
 
@@ -155,7 +156,7 @@ As an **owner**, I can **toggle a space OFF without disturbing anyone currently 
 | `space` | read | Space name for the row label |
 | `notification` | new row | Exit-verification-pending push, deep-linked to the session |
 
-**Invariants this flow relies on:** Invariant 4 (one active session per space) and Invariant 1
+**Invariants this flow relies on:** Invariant 4 (one active session per **slot**) and Invariant 1
 (locked rate). Recorded in [`../architecture/data.md`](../architecture/data.md).
 
 ## Screens

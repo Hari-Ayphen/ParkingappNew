@@ -310,8 +310,10 @@ the only signal there is, since nothing was vetted up front**.
   prevents: exit becoming a negotiation, which is exactly the dispute the design removes.
 - **BR-7:** **Bookings are request-approve, not instant.** Owner approval is required and requests
   auto-expire. Tapping Confirm buys nothing but a place in the Owner's queue.
-- **BR-8:** **One active session per space** (Invariant 4). Two Parkers may request the same slot
-  simultaneously; whichever the Owner approves first wins and the other is auto-notified.
+- **BR-8:** **One active session per slot** (Invariant 4, ADR-0005). A space accepts as many
+  concurrent sessions as it has active slots. Two Parkers may request the last free slot
+  simultaneously; whichever the Owner approves first wins and the other is auto-notified. The
+  server assigns the slot at approval — the Parker never picks one.
 - **BR-9:** **At least one vehicle must exist before a booking can be confirmed.**
 - **BR-10:** The session has **exactly six sub-states**: Arriving, Condition Check, OTP
   Acknowledgement, OTP Display, Active, Exit Verification. They are a lookup table, not a `text`
@@ -345,8 +347,9 @@ the only signal there is, since nothing was vetted up front**.
   must appear in **no** DTO. `architecture/data.md` flags the absence of DB-level immutability as a
   real hole.
 - **Invariant 2** — amount calculated, never entered. Enforced by the exit DTO having no amount field.
-- **Invariant 4** — one active session per space. Enforced by a partial unique index on
-  `booking_session(space_id) WHERE ended_at IS NULL`. The DB is the authority because the race is real.
+- **Invariant 4** — one active session per **slot**. Enforced by a partial unique index on
+  `booking_session(space_slot_id) WHERE ended_at IS NULL`. The DB is the authority because the race
+  is real.
 
 All recorded in [`../architecture/data.md`](../architecture/data.md).
 
@@ -394,7 +397,10 @@ All recorded in [`../architecture/data.md`](../architecture/data.md).
 - [ ] **Does the session survive the Parker losing connectivity** at Condition Check or OTP
       Display, and what is the recovery path?
 - [ ] Are condition-check photos visible to the Owner, and exit photos to the Parker?
-- [ ] Does a space's `slot_count` > 1 conflict with Invariant 4's one-active-session-per-space?
+- [x] ~~Does a space's `slot_count` > 1 conflict with Invariant 4's one-active-session-per-space?~~
+      **Resolved 2026-07-20 (ADR-0005):** it did. Slots are now rows (`space_slot`) and Invariant 4
+      is one active session per **slot**. `booking.space_slot_id` is assigned by the server at
+      approval; the parker never picks a slot.
 
 ---
 

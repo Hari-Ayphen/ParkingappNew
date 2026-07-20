@@ -96,6 +96,9 @@ enough information to decide to book it**.
 - **AC4:** Given Step 3, when I choose a space type, vehicle types supported, and slot count, then
   all three are stored — slot count and vehicle type are the inputs to the platform fee
   (`14-billing-logic.md`), so neither may be left unset.
+- **AC4b:** Given a slot count of N, when the space is created, then **N `space_slot` rows are
+  created with it** — slots are rows, not just a number (ADR-0005). A space with a slot count and
+  no slot rows is unbookable, because bookings attach to a slot.
 - **AC5:** Given Step 6 (Availability rules), when I save them, then they are recorded as a
   display hint only and do not gate bookings or the live toggle.
 - **AC6:** Given Step 7, when the summary renders, then every earlier step is shown and each is
@@ -176,6 +179,7 @@ waiting on a human before I can start earning**.
 | Table | New / changed | Notes |
 |---|---|---|
 | `space` | new | Location, type, slot count, hourly rate (integer paise), availability rules; `space_status_id` set to `active` on insert, `is_live` defaults `false` |
+| `space_slot` | new | **One row per bookable slot**, created alongside the space (ADR-0005). Bookings attach here, not to `space` |
 | `space_status` | new (seed) | Lookup — `active`, `suspended` only. **Must contain no `pending_approval` row** |
 | `space_type` | new (seed) | Lookup — driveway / lot / covered / open |
 | `vehicle_type` | new (seed) | Lookup; also an input to the platform fee |

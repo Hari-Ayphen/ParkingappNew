@@ -92,8 +92,10 @@ matches it** so that **I never start a request for a space that is already taken
 
 - **AC1:** Given the space has no active session, is toggled ON and is not suspended, when the
   screen loads, then availability reads "Available now" and Book Now is enabled.
-- **AC2:** Given the space has an active session, when the screen loads, then availability reads
-  "Currently occupied" and Book Now is disabled.
+- **AC2:** Given **every active slot** on the space has a live session, when the screen loads, then
+  availability reads "Currently occupied" and Book Now is disabled.
+- **AC2b:** Given a multi-slot space with at least one free slot, when the screen loads, then
+  availability shows how many remain (e.g. "3 of 10 free") and Book Now stays enabled.
 - **AC3:** Given Book Now is disabled, when I look at it, then an inline reason states *why* —
   occupied, toggled off, or suspended — and the three are distinguishable.
 - **AC4:** Given Book Now is enabled, when I tap it, then I navigate to Booking Confirm for this
@@ -126,8 +128,9 @@ As a **Parker lingering on this screen**, I can **have availability update in pl
   nothing about the owner approving.
 - **BR-4:** Book Now is disabled when the space is occupied, toggled OFF, or admin-suspended — and
   the reason is always surfaced, never a silently dead button.
-- **BR-5:** "Currently occupied" derives from Invariant 4 — one active session per space. It is a
-  fact about the session table, not a field an owner sets.
+- **BR-5:** "Currently occupied" derives from Invariant 4 — one active session per **slot**
+  (ADR-0005). A space is occupied only when **every active slot** is busy. It is a fact computed
+  from the session table, not a field an owner sets.
 - **BR-6:** Ratings are **computed from past sessions' rating rows**, not a stored average.
 - **BR-7:** Nothing on this listing has been vetted before publication. Trust is reactive —
   ratings, in-session issue reports and admin takedown after the fact.
@@ -144,8 +147,9 @@ As a **Parker lingering on this screen**, I can **have availability update in pl
 | `rating` / `rating_tag` | read | Owner and space rating, review list |
 | `user` | read | Owner display name and photo only — never their phone or UPI ID |
 
-**Invariants this relies on:** Invariant 4 (one active session per space) makes availability a
-single unambiguous value. This feature introduces no new invariants.
+**Invariants this relies on:** Invariant 4 (one active session per **slot** — ADR-0005).
+Availability is a count of free active slots, not a boolean. This feature introduces no new
+invariants.
 
 ## Screens
 
@@ -177,8 +181,9 @@ single unambiguous value. This feature introduces no new invariants.
       says "owner name + rating" and also "Parker reviews", without saying which aggregate.
 - [ ] Are `space_availability_rule` day/hour hints surfaced on this screen? They are a display hint
       elsewhere and this doc doesn't mention them.
-- [ ] Does the page show slot count or remaining slots? A space has `slot_count`, but Invariant 4
-      allows only one active session — the relationship is unresolved.
+- [x] ~~Does the page show slot count or remaining slots?~~ **Resolved 2026-07-20 (ADR-0005):**
+      remaining slots. Invariant 4 is now one active session per *slot*, so the page shows free
+      slots ("3 of 10 free") and reads "Currently occupied" only when all are busy.
 - [ ] Can a Parker open their **own** space here, and should Book Now be blocked if so?
 
 ---

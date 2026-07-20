@@ -173,7 +173,8 @@ adjudicate, since neither of us can change the number ourselves**.
 | `admin_action` | new row (correction path only) | Attribution for any admin amount change |
 
 **Invariants this flow depends on:** Invariant 2 (amount calculated, never entered) and Invariant 4
-(one active session per space, released by `ended_at`). Both in
+(one active session per **slot**, released by `ended_at` — which frees that slot for rebooking, not
+the whole space). Both in
 [`../architecture/data.md`](../architecture/data.md).
 
 > There is **no transaction, payment, or receipt table.** Adding one would imply SpotKey knows

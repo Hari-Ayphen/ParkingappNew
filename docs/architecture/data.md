@@ -88,6 +88,7 @@ belong in Redis with a TTL, since they expire in minutes and must not accumulate
 | Table | Purpose |
 |---|---|
 | `space` | `owner_id`, name, address, `lat`, `lng`, `space_type_id`, `slot_count`, `hourly_rate_paise`, `space_status_id`, `is_live` |
+| `space_slot` | **One row per bookable slot.** `space_id`, `label` (e.g. "A1"), `is_active`. A 1-slot driveway has one row; a 10-slot lot has ten |
 | `space_type` | Lookup — driveway / lot / covered / open |
 | `space_status` | Lookup — **`active`, `suspended`**. *No `pending_approval`* |
 | `space_photo` | 3–8 per space, ordered (`09-add-space-flow.md:22`) |
@@ -111,7 +112,7 @@ owner switching off for the evening — and only one of those is billable.
 
 | Table | Purpose |
 |---|---|
-| `booking` | `space_id`, `parker_id`, `vehicle_id`, `requested_start`, `duration_minutes`, `booking_status_id`, **`locked_hourly_rate_paise`**, `final_amount_paise` |
+| `booking` | `space_id`, **`space_slot_id`** (assigned at approval, null while requested), `parker_id`, `vehicle_id`, `requested_start`, `duration_minutes`, `booking_status_id`, **`locked_hourly_rate_paise`**, `final_amount_paise` |
 | `booking_status` | Lookup — requested, approved, rejected, expired, cancelled_by_parker, cancelled_by_owner, active, completed |
 | `session_state` | Lookup — the six sub-states: arriving, condition_check, otp_ack, otp_display, active, exit_verification_pending (`06-booking-flow.md:53`) |
 | `booking_session` | 1:1 with an approved booking. Current `session_state_id`, `started_at`, `ended_at` |
@@ -212,11 +213,37 @@ The owner cannot type an amount at exit (`12-exit-verification-flow.md:49`) — 
 - **`[OPEN]`** This invariant is itself disputed — docs 14 and 08 don't know about the gate.
   Resolve before implementing (Known Gotcha 2).
 
-### 4. One active session per space at a time
+### 4. One active session per **slot** at a time
 
-- **Enforced by:** partial unique index on `booking_session(space_id) WHERE ended_at IS NULL`.
-- **Gap:** none. The DB is the authority — correct, because the race is real: two parkers can
-  request the same slot simultaneously (`10-booking-requests-flow.md:45`).
+A space may hold as many concurrent sessions as it has slots — no more.
+
+- **Enforced by:** partial unique index on `booking_session(space_slot_id) WHERE ended_at IS NULL`.
+- **Gap:** none. The DB remains the authority, which matters because the race is real: two parkers
+  can request the same space simultaneously (`10-booking-requests-flow.md:45`).
+
+> **This was originally written as one session per *space*, which was wrong.** `space.slot_count`
+> lets an owner declare a 10-slot lot, but a space-level unique index would let exactly one car
+> into it — the other nine slots would be unbookable forever, while the owner was billed at the
+> 10-slot rate (`14-billing-logic.md` §2). The owner pays for capacity the product refuses to sell.
+>
+> Modelling slots as rows fixes it without weakening enforcement: the index just moves down a
+> level. The alternative — keeping `slot_count` as a number and checking
+> `COUNT(active) < slot_count` in the service layer — cannot be made race-safe without a lock, and
+> the concurrent-request race is the exact scenario this invariant exists to prevent. See ADR-0005.
+
+**Slot assignment is a system concern, not a user choice.** A parker books *the space*; the server
+assigns a free `space_slot` at approval time. Exposing slot selection would make the parker
+responsible for a detail they cannot verify from a photo.
+
+### 4b. `slot_count` must match the number of active slot rows
+
+- **Enforced by:** application code on space create and edit — `slot_count` and the count of
+  `space_slot WHERE is_active` are written together.
+- **Gap:** **no DB constraint.** They can drift, and drift is expensive in both directions: too few
+  rows means unsellable capacity the owner is billed for; too many means overbooking a physical
+  space. Either make `slot_count` a derived read (`COUNT(*)` over active slots) and drop the
+  column, or add a trigger. **Deriving it is cleaner — the column is a denormalisation that buys
+  little.** `[ASSUMPTION]` — needs ratification.
 
 ### 5. One default vehicle per user
 
@@ -294,6 +321,8 @@ Two need a design decision rather than a constraint:
 | 4 | Ratings aggregated on read, or materialised? | Rating reads at scale |
 | 5 | Soft-delete or restrict for `vehicle`? | Invariant 7 |
 | 6 | Does an issued invoice pin the mandate used? | Invariant 10 |
+| 7 | Drop `space.slot_count` and derive it from `space_slot`? | Invariant 4b |
+| 8 | Can an owner deactivate one slot of a multi-slot space, and does that change the platform rate mid-cycle? | Billing + `space_slot` |
 
 ## Related docs
 

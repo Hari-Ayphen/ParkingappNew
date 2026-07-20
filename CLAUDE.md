@@ -206,17 +206,24 @@ docs/             # Repo documentation (see docs/README.md)
 
 ## Stage order deviation
 
-`GETTING_STARTED.md` runs Stages 0–9 in order. **This project defers Stage 4 (design system) to
-last**, by decision on 2026-07-20. Stage numbering is unchanged — only the order we execute them.
+`GETTING_STARTED.md` runs Stages 0–9 in order. This project ran them out of order — Stage 4 was
+deferred, then brought forward once a design system existed to import. Stage numbering is
+unchanged; only the execution order differs.
 
-Completed: Stage 0 (setup), Stage 1 (`CORE_DOCUMENT.md`), Stage 3 (`docs/branding/brand.md`).
-Stage 2 is partially covered — 26 flow specs exist in `docs/features/` but they don't follow the
-kit's `_template.md` shape (no given/when/then acceptance criteria, no per-feature "out of scope"),
-which will matter at Stage 6 when user stories become GitHub issues.
+| Stage | State |
+|---|---|
+| 0 — Setup | Done, minus labels + Projects board (needs `gh` auth) |
+| 1 — `CORE_DOCUMENT.md` | Done |
+| 2 — Feature docs | Done — 26 flow specs, user stories backfilled (134 stories, 555 ACs) |
+| 3 — Branding | Done. **Palette superseded 2026-07-20** by the imported design system |
+| 4 — Design system | **Done** — `docs/design/design-system.md`, imported and adapted |
+| 5 — Schema + ADRs | Done — `docs/architecture/data.md`, ADRs 0001–0006 |
+| 6 — Plan | `PROJECT_PLAN.md` drafted. Milestones + issues pending `gh` auth |
+| 7–9 | Not started. No application code exists |
 
-> **The risk this carries:** any UI built before the design system exists will hardcode colours
-> and spacing, which makes `docs/README.md`'s "tokens, not values" rule unenforceable after the
-> fact. Land Stage 4 before Stage 7 implementation, not after.
+> **Design tokens now exist, so the "tokens, not values" rule is enforceable from the first line of
+> UI.** The dark-mode token set was *derived*, not imported — the source system had no dark theme.
+> Check it on a real device before v0.3 closes; night parking is a primary use case.
 
 ## Known Gotchas
 

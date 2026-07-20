@@ -65,28 +65,44 @@ job is to inform a decision, not to push one.
 
 Source colours — brand identity, not UI roles.
 
+*Palette superseded 2026-07-20 — see the note below.*
+
 | Token | Value | Where it may be used |
 |---|---|---|
-| `--brand-primary` | `#2F3E8C` | Primary actions, active nav, links, focused fields |
-| `--brand-primary-dark` | `#1E2A63` | Hover/pressed state of primary **only** |
-| `--brand-accent` | `#E8A317` | The live/ON toggle, highlights, badges. **Never a full surface, never body text** |
-| `--brand-ink` | `#14161C` | Primary text |
+| `--brand-primary` | `#0F766E` | Primary actions, active nav, links, focused fields, **and available map pins** |
+| `--brand-primary-hover` | `#14919B` | Hover/pressed state of primary **only** |
+| `--brand-primary-dark` | `#134E4A` | Dark-theme surfaces derived from primary |
+| `--brand-primary-light` | `#CCFBF1` | Tinted fills, selected rows |
+| `--brand-accent` | `#0891B2` | Highlights, secondary emphasis. **Never a full surface, never body text** |
+| `--brand-ink` | `#0A1929` | Primary text |
 | `--brand-surface` | `#FFFFFF` | Cards, sheets, elevated surfaces |
-| `--brand-success` | `#1F9D55` | Success state **only** — never decoration |
-| `--brand-danger` | `#C6362F` | Destructive actions and errors **only** |
+| `--brand-success` | `#047857` | Success **messages** only — never decoration, **never the map** |
+| `--brand-danger` | `#DC2626` | Destructive actions and errors **only** |
 
-### Reserved: map availability states
+> **This palette replaces the original indigo + amber.** It was imported on 2026-07-20 from the
+> `Parking Design System.dc.html` Claude Design project, which the product owner chose over the
+> Stage 3 palette. The reasoning below has been rewritten to match what is now true — the earlier
+> indigo rationale is preserved in git history, not here, because a brand doc that argues for a
+> colour it no longer uses is worse than one that says nothing.
 
-`--brand-success` and `--brand-danger` do double duty as **map availability** — green available,
-red occupied — and those pins flip live over Socket.IO (`../features/05-space-detail-flow.md:40`).
+### The map collision, and how it is handled now
 
-> **This is why the brand primary is indigo and not green, teal, or red.** A green brand colour
-> would read as "available" every time a pin changed state. Any new colour proposed for this
-> palette must first be checked against the map: if it could be mistaken for a state, it's out.
+The original indigo was chosen partly *because* teal risked colliding with green "available" pins.
+Adopting teal makes that collision real, so it is resolved a different way:
 
-**Off-brand:** no green or red anywhere except the two semantic roles above. No gradients on
-surfaces. No second accent — amber is the only warm colour, and adding a second one is how the
-"calm" reading dies.
+> **Green is banned from the map entirely.** Availability is no longer a separate colour concept —
+> **bookable *is* the brand state.** An available pin is `--brand-primary`; an occupied one recedes
+> to neutral grey. Green survives only for success *messages*, which never appear on a map.
+>
+> And **availability is never signalled by colour alone**: available pins are filled and show a
+> price, occupied pins are hollow and priceless. That survives sunlight, colour-blindness, and a
+> 2mm pin — which colour alone does not.
+
+**Off-brand:** no green or red anywhere except the two semantic roles above, and **no green on the
+map under any circumstances**. No gradients on surfaces — with exactly one exception, the
+active-session card (see `../design/design-system.md` → Signature details). Any new colour proposed
+for this palette must first be checked against the map: if it could be mistaken for a state, it's
+out.
 
 ### Contrast floor
 
@@ -99,13 +115,18 @@ ships Light/Dark/System, and night is a primary use case, not an edge case.
 
 | Role | Family | Weights | Use |
 |---|---|---|---|
-| Display | `Inter` | 600, 700 | Screen titles, amounts, empty-state headlines |
-| UI / body | `Inter` | 400, 500, 600 | Everything else |
+| Display | `Poppins` | 500, 600, 700 | Screen titles, section headings, **and every numeric fact** — rate, distance, duration, amount, slot count |
+| UI / body | `Inter` | 400, 500, 600, 700 | Everything else |
 | Mono | `JetBrains Mono` | 400, 500 | Vehicle registration numbers, OTP codes, booking IDs, invoice numbers |
 
-One family for display and UI — a second display face would add personality this brand
-deliberately doesn't want. Inter is chosen for a tall x-height and high legibility at small sizes
-in glare, plus a correct `₹` glyph.
+Inter carries the body for its tall x-height and legibility at small sizes in glare, plus a correct
+`₹` glyph. Poppins carries headings and, unusually, **numbers**.
+
+> **Why numbers get the display face.** This product's content *is* numbers — ₹30/hr, 0.4 km,
+> 2 slots, 4.8 stars, ₹38 due. A driver scanning a card at arm's length is reading figures, not
+> prose. Setting them in the heavier, wider display face is what makes a space card legible in a
+> parked car, and it is the single decision that most affects whether the app feels usable at a
+> glance.
 
 > **Mono is structural, not decorative.** Registration numbers and OTP codes are transcribed by
 > humans under time pressure, out of a car window or off a screen. A proportional face makes
@@ -148,26 +169,34 @@ The contract between brand and code. Keep in sync with `brand.json`.
 ```jsonc
 {
   "brand": {
-    "primary":   "#2F3E8C",
-    "primaryDark": "#1E2A63",
-    "accent":    "#E8A317",
-    "ink":       "#14161C",
-    "surface":   "#FFFFFF",
-    "success":   "#1F9D55",
-    "danger":    "#C6362F"
+    "primary":      "#0F766E",
+    "primaryHover": "#14919B",
+    "primaryDark":  "#134E4A",
+    "primaryLight": "#CCFBF1",
+    "accent":       "#0891B2",
+    "ink":          "#0A1929",
+    "surface":      "#FFFFFF",
+    "success":      "#047857",
+    "danger":       "#DC2626"
   },
   "font": {
-    "display": "Inter",
+    "display": "Poppins",
     "sans":    "Inter",
     "mono":    "JetBrains Mono"
   },
-  "radius": "12px"
+  "radius": "8px"
 }
 ```
 
-> **Radius 12px** — deliberately mid. 4px reads severe and clinical; 24px reads playful and
-> consumer. 12px is the calm middle, and it's the one value most likely to be nudged by taste, so
-> it's stated here rather than negotiated per component.
+> **Radius 8px**, with 6px for small controls and 12px for cards and sheets — imported from the
+> design system. (The Stage 3 doc specified a single 12px; the imported system distinguishes three
+> steps, which is the more useful contract.)
+
+> **Poppins for display, Inter for body.** The Stage 3 doc used Inter for both, on the grounds that
+> a second face would add personality this brand doesn't want. The imported system pairs Poppins
+> headings with Inter body, and that has earned its place for a specific reason: **numeric facts —
+> rate, distance, duration, amount — are set in the display face**, which makes a space card
+> scannable at arm's length in a car. Mono is retained from Stage 3 and was not in the import.
 
 ## Related docs
 
